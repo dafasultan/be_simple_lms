@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure--au_k(pz^loe(+%yeeo$#0m#@-p0+z*notwvk$nya(=r@2==$%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'lms_core',
+    'silk'
 ]
 
 MIDDLEWARE = [
@@ -47,6 +49,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'silk.middleware.SilkyMiddleware'
+
 ]
 
 ROOT_URLCONF = 'simplelms.urls'
@@ -75,8 +79,12 @@ WSGI_APPLICATION = 'simplelms.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'simple_lms',
+        'USER': 'simple_user',
+        'PASSWORD': 'simple_password',
+        'HOST': 'uas_db',
+        'PORT': '5432',
     }
 }
 

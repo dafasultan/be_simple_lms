@@ -69,10 +69,17 @@ with open(filepath+'comments.json') as jsonfile:
     for num, row in enumerate(comments):
         if int(row['user_id']) > 50:
             row['user_id'] = randint(5, 40)
-        if not Comment.objects.filter(pk=num+1).exists():
-            obj_create.append(Comment(content_id=CourseContent.objects.get(pk=int(row['content_id'])), 
-                                   member_id=User.objects.get(pk=int(row['user_id'])), 
-                                   comment=row['comment']))
+        
+        content = CourseContent.objects.get(pk=int(row['content_id']))
+        
+        try:
+            member = CourseMember.objects.get(course_id=content.course_id, user_id=User.objects.get(pk=int(row['user_id'])))
+            obj_create.append(Comment(content_id=content, member_id=member, comment=row['comment']))
+        except CourseMember.DoesNotExist:
+            print(f"CourseMember tidak ditemukan untuk user_id {row['user_id']} dan content_id {row['content_id']}")
+            
     Comment.objects.bulk_create(obj_create)
+
+
 
 print("--- %s seconds ---" % (time.time() - start_time))

@@ -2,6 +2,25 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # Create your models here.
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profile_pictures/", blank=True, null=True)
+    role = models.CharField(max_length=10, choices=[('teacher', 'Teacher'), ('student', 'Student')], default='student')
+
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
+    
+class CourseCategory(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Course(models.Model):
     name = models.CharField("Nama Kursus", max_length=255)
     description = models.TextField("Deskripsi")
@@ -10,6 +29,8 @@ class Course(models.Model):
     teacher = models.ForeignKey(User, verbose_name="Pengajar", on_delete=models.RESTRICT)
     created_at = models.DateTimeField("Dibuat pada", auto_now_add=True)
     updated_at = models.DateTimeField("Diperbarui pada", auto_now=True)
+    category = models.ForeignKey(CourseCategory, null=True, blank=True, on_delete=models.SET_NULL, related_name="courses")
+
 
     def __str__(self):
         return self.name
@@ -48,6 +69,9 @@ class CourseContent(models.Model):
                                 on_delete=models.RESTRICT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    teacher = models.ForeignKey(User, verbose_name="Pengajar", on_delete=models.CASCADE, null=True, blank=True)
+    is_published = models.BooleanField(default=False)
+
 
     class Meta:
         verbose_name = "Konten Matkul"
@@ -70,3 +94,33 @@ class Comment(models.Model):
 
     def __str__(self) -> str:
         return "Komen: "+self.member_id.user_id+"-"+self.comment
+    
+    
+class CourseFeedback(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="feedbacks")
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feedbacks")
+    rating = models.IntegerField("Rating", choices=[(i, i) for i in range(1, 6)])
+    feedback = models.TextField("Feedback", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Umpan Balik Kursus"
+        verbose_name_plural = "Umpan Balik Kursus"
+        unique_together = ('course', 'student')
+
+    def __str__(self):
+        return f"Feedback dari {self.student.username} untuk {self.course.name}"
+
+
+class CompletionTracking(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.ForeignKey(CourseContent, on_delete=models.CASCADE)
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('student', 'content')
+
+    def __str__(self):
+        return f"{self.student.username} - {self.content.name} - Completed: {self.completed}"

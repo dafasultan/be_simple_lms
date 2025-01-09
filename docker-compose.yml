@@ -1,6 +1,6 @@
 services:
   django:
-    container_name: prepare_lms
+    container_name: uas_lms
     build: .
     volumes:
       - ./code:/code
@@ -8,15 +8,18 @@ services:
       - "8001:8000"
     # command: sleep infinity
     command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - postgres
+
   postgres:
-    container_name: prepare_db
+    container_name: uas_db
     image: postgres:16
     environment:
-      - POSTGRES_DB=simple_lms
-      - POSTGRES_USER=simple_user
-      - POSTGRES_PASSWORD=simple_password
-      - PGDATA=/var/lib/postgresql/data
+      POSTGRES_DB: simple_lms
+      POSTGRES_USER: simple_user
+      POSTGRES_PASSWORD: simple_password
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./postgres:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     ports:
-      - "5551:5432"
+      - "5552:5432"
